@@ -1,0 +1,980 @@
+{
+  "info": {
+    "name": "Customer Return Risk Analyzer API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Generated from the FastAPI OpenAPI schema by scripts/export_api_docs.py"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000"
+    },
+    {
+      "key": "customer_id",
+      "value": "CUST0046"
+    }
+  ],
+  "item": [
+    {
+      "name": "health",
+      "item": [
+        {
+          "name": "GET /api/health",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/health",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "health"
+              ],
+              "query": []
+            },
+            "description": "Service and database health"
+          }
+        }
+      ]
+    },
+    {
+      "name": "customers",
+      "item": [
+        {
+          "name": "GET /api/customers",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/customers",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "customers"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "",
+                  "disabled": true,
+                  "description": ""
+                },
+                {
+                  "key": "page_size",
+                  "value": "",
+                  "disabled": true,
+                  "description": ""
+                },
+                {
+                  "key": "search",
+                  "value": "",
+                  "disabled": true,
+                  "description": "Customer ID or name"
+                },
+                {
+                  "key": "risk_level",
+                  "value": "",
+                  "disabled": true,
+                  "description": ""
+                },
+                {
+                  "key": "min_score",
+                  "value": "",
+                  "disabled": true,
+                  "description": ""
+                },
+                {
+                  "key": "min_return_ratio",
+                  "value": "",
+                  "disabled": true,
+                  "description": "e.g. 0.3 for above 30%"
+                },
+                {
+                  "key": "category",
+                  "value": "",
+                  "disabled": true,
+                  "description": ""
+                },
+                {
+                  "key": "sort",
+                  "value": "",
+                  "disabled": true,
+                  "description": ""
+                },
+                {
+                  "key": "order",
+                  "value": "",
+                  "disabled": true,
+                  "description": ""
+                }
+              ]
+            },
+            "description": "Customer table with search, filters, sorting"
+          }
+        },
+        {
+          "name": "GET /api/customers/{customer_id}",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/customers/{{customer_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "customers",
+                "{{customer_id}}"
+              ],
+              "query": []
+            },
+            "description": "Customer profile"
+          }
+        },
+        {
+          "name": "GET /api/customers/{customer_id}/orders",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/customers/{{customer_id}}/orders",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "customers",
+                "{{customer_id}}",
+                "orders"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "",
+                  "disabled": true,
+                  "description": ""
+                },
+                {
+                  "key": "page_size",
+                  "value": "",
+                  "disabled": true,
+                  "description": ""
+                }
+              ]
+            },
+            "description": "Customer order history"
+          }
+        },
+        {
+          "name": "GET /api/customers/{customer_id}/returns",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/customers/{{customer_id}}/returns",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "customers",
+                "{{customer_id}}",
+                "returns"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "",
+                  "disabled": true,
+                  "description": ""
+                },
+                {
+                  "key": "page_size",
+                  "value": "",
+                  "disabled": true,
+                  "description": ""
+                }
+              ]
+            },
+            "description": "Customer return history"
+          }
+        }
+      ]
+    },
+    {
+      "name": "risk",
+      "item": [
+        {
+          "name": "POST /api/risk/assess-all",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/risk/assess-all",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "risk",
+                "assess-all"
+              ],
+              "query": []
+            },
+            "description": "Rescore every customer"
+          }
+        },
+        {
+          "name": "GET /api/risk/high-risk",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/risk/high-risk",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "risk",
+                "high-risk"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "",
+                  "disabled": true,
+                  "description": ""
+                },
+                {
+                  "key": "page_size",
+                  "value": "",
+                  "disabled": true,
+                  "description": ""
+                },
+                {
+                  "key": "review_status",
+                  "value": "",
+                  "disabled": true,
+                  "description": ""
+                }
+              ]
+            },
+            "description": "High-risk customers for monitoring"
+          }
+        },
+        {
+          "name": "GET /api/risk/summary",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/risk/summary",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "risk",
+                "summary"
+              ],
+              "query": []
+            },
+            "description": "Counts by risk level"
+          }
+        },
+        {
+          "name": "POST /api/risk/assess/{customer_id}",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/risk/assess/{{customer_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "risk",
+                "assess",
+                "{{customer_id}}"
+              ],
+              "query": []
+            },
+            "description": "Score one customer now"
+          }
+        },
+        {
+          "name": "GET /api/risk/{customer_id}",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/risk/{{customer_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "risk",
+                "{{customer_id}}"
+              ],
+              "query": []
+            },
+            "description": "Latest assessment"
+          }
+        },
+        {
+          "name": "GET /api/risk/{customer_id}/history",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/risk/{{customer_id}}/history",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "risk",
+                "{{customer_id}}",
+                "history"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "",
+                  "disabled": true,
+                  "description": ""
+                }
+              ]
+            },
+            "description": "Score history"
+          }
+        }
+      ]
+    },
+    {
+      "name": "analytics",
+      "item": [
+        {
+          "name": "GET /api/analytics/summary",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/analytics/summary",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "analytics",
+                "summary"
+              ],
+              "query": [
+                {
+                  "key": "date_from",
+                  "value": "",
+                  "disabled": true,
+                  "description": ""
+                },
+                {
+                  "key": "date_to",
+                  "value": "",
+                  "disabled": true,
+                  "description": ""
+                }
+              ]
+            },
+            "description": "Summary"
+          }
+        },
+        {
+          "name": "GET /api/analytics/returns-by-category",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/analytics/returns-by-category",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "analytics",
+                "returns-by-category"
+              ],
+              "query": [
+                {
+                  "key": "date_from",
+                  "value": "",
+                  "disabled": true,
+                  "description": ""
+                },
+                {
+                  "key": "date_to",
+                  "value": "",
+                  "disabled": true,
+                  "description": ""
+                }
+              ]
+            },
+            "description": "Returns By Category"
+          }
+        },
+        {
+          "name": "GET /api/analytics/risk-distribution",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/analytics/risk-distribution",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "analytics",
+                "risk-distribution"
+              ],
+              "query": []
+            },
+            "description": "Risk Distribution"
+          }
+        },
+        {
+          "name": "GET /api/analytics/return-trends",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/analytics/return-trends",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "analytics",
+                "return-trends"
+              ],
+              "query": [
+                {
+                  "key": "granularity",
+                  "value": "",
+                  "disabled": true,
+                  "description": ""
+                },
+                {
+                  "key": "date_from",
+                  "value": "",
+                  "disabled": true,
+                  "description": ""
+                },
+                {
+                  "key": "date_to",
+                  "value": "",
+                  "disabled": true,
+                  "description": ""
+                }
+              ]
+            },
+            "description": "Return Trends"
+          }
+        },
+        {
+          "name": "GET /api/analytics/return-ratio-distribution",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/analytics/return-ratio-distribution",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "analytics",
+                "return-ratio-distribution"
+              ],
+              "query": []
+            },
+            "description": "Return Ratio Distribution"
+          }
+        },
+        {
+          "name": "GET /api/analytics/return-reasons",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/analytics/return-reasons",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "analytics",
+                "return-reasons"
+              ],
+              "query": [
+                {
+                  "key": "date_from",
+                  "value": "",
+                  "disabled": true,
+                  "description": ""
+                },
+                {
+                  "key": "date_to",
+                  "value": "",
+                  "disabled": true,
+                  "description": ""
+                }
+              ]
+            },
+            "description": "Return Reasons"
+          }
+        }
+      ]
+    },
+    {
+      "name": "reviews",
+      "item": [
+        {
+          "name": "PATCH /api/reviews/{customer_id}",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/reviews/{{customer_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "reviews",
+                "{{customer_id}}"
+              ],
+              "query": []
+            },
+            "description": "Change review status (adds audit row)",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"review_status\": \"UNDER_INVESTIGATION\",\n  \"review_notes\": \"Checking\",\n  \"updated_by\": \"Admin\"\n}"
+            }
+          }
+        },
+        {
+          "name": "GET /api/reviews/{customer_id}",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/reviews/{{customer_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "reviews",
+                "{{customer_id}}"
+              ],
+              "query": []
+            },
+            "description": "Audit trail, newest first"
+          }
+        },
+        {
+          "name": "GET /api/reviews",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/reviews",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "reviews"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "",
+                  "disabled": true,
+                  "description": ""
+                },
+                {
+                  "key": "page_size",
+                  "value": "",
+                  "disabled": true,
+                  "description": ""
+                },
+                {
+                  "key": "review_status",
+                  "value": "",
+                  "disabled": true,
+                  "description": ""
+                }
+              ]
+            },
+            "description": "Current review status per customer"
+          }
+        }
+      ]
+    },
+    {
+      "name": "ml",
+      "item": [
+        {
+          "name": "POST /api/ml/predict",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/ml/predict",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "ml",
+                "predict"
+              ],
+              "query": []
+            },
+            "description": "ML probability of a suspicious return pattern",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customer_id\": \"CUST0046\"\n}"
+            }
+          }
+        },
+        {
+          "name": "GET /api/ml/metrics",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/ml/metrics",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "ml",
+                "metrics"
+              ],
+              "query": []
+            },
+            "description": "Stored evaluation metrics from the last training run"
+          }
+        }
+      ]
+    },
+    {
+      "name": "data",
+      "item": [
+        {
+          "name": "POST /api/data/import",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/data/import",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "data",
+                "import"
+              ],
+              "query": []
+            },
+            "description": "Import orders and returns from CSV (all-or-nothing), then rescore",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": ""
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET /api/data/import/template",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/data/import/template",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "data",
+                "import",
+                "template"
+              ],
+              "query": []
+            },
+            "description": "Empty CSV template with the required columns"
+          }
+        },
+        {
+          "name": "GET /api/data/export/flagged-customers",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/data/export/flagged-customers",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "data",
+                "export",
+                "flagged-customers"
+              ],
+              "query": [
+                {
+                  "key": "risk_level",
+                  "value": "",
+                  "disabled": true,
+                  "description": "ALL = every scored customer"
+                },
+                {
+                  "key": "min_score",
+                  "value": "",
+                  "disabled": true,
+                  "description": ""
+                }
+              ]
+            },
+            "description": "CSV of flagged customers (no contact details)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "settings",
+      "item": [
+        {
+          "name": "GET /api/settings/scoring-rules",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/settings/scoring-rules",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "settings",
+                "scoring-rules"
+              ],
+              "query": []
+            },
+            "description": "Get Rules"
+          }
+        },
+        {
+          "name": "PUT /api/settings/scoring-rules",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/settings/scoring-rules",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "settings",
+                "scoring-rules"
+              ],
+              "query": []
+            },
+            "description": "Save a new rules version and rescore"
+          }
+        },
+        {
+          "name": "POST /api/settings/scoring-rules/reset",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/settings/scoring-rules/reset",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "settings",
+                "scoring-rules",
+                "reset"
+              ],
+              "query": [
+                {
+                  "key": "updated_by",
+                  "value": "",
+                  "disabled": true,
+                  "description": ""
+                }
+              ]
+            },
+            "description": "Restore the default rules and rescore"
+          }
+        }
+      ]
+    }
+  ]
+}

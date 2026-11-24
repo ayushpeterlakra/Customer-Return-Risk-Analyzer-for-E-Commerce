@@ -1,0 +1,37 @@
+# Default rule-based scoring configuration.
+# The Settings page can save new versions to the database; the newest saved
+# version wins, otherwise this file is used. Every value here is a default
+# chosen for the synthetic demo data, not a validated fraud threshold.
+version: "default-v1"
+
+levels:
+  low_max: 40      # 0-40   -> LOW
+  medium_max: 70   # 41-70  -> MEDIUM, 71-100 -> HIGH (flagged for manual review)
+
+# Reason codes that count as vague when the customer gave no explanatory text.
+vague_reason_codes: [DEFECTIVE, NOT_WORKING, OTHER]
+vague_text_min_length: 15   # text shorter than this counts as "no explanation"
+
+# A category is high-return when its historical return rate exceeds the
+# store-wide rate by this margin (absolute, e.g. 0.05 = 5 percentage points).
+high_return_category_margin: 0.05
+
+# Maximum points each signal group can contribute (stops correlated rules stacking).
+group_caps:
+  return_volume: 35
+  return_reasons: 25
+  item_mismatch: 25
+  return_timing: 15
+  behaviour: 20
+
+rules:
+  high_return_ratio:        {enabled: true, points: 30, threshold: 0.40, min_orders: 3}
+  very_high_return_ratio:   {enabled: true, points: 35, threshold: 0.60, min_orders: 5}
+  high_return_frequency:    {enabled: true, points: 15, min_returns_90d: 4}
+  vague_reasons:            {enabled: true, points: 15, min_count: 3}
+  repeated_reason:          {enabled: true, points: 10, min_share: 0.70, min_returns: 4}
+  mismatch_history:         {enabled: true, points: 10, multi_points: 25, multi_threshold: 2}
+  short_return_window:      {enabled: true, points: 15, max_avg_days: 2.0, min_returns: 3}
+  high_return_categories:   {enabled: true, points: 10, min_share: 0.60, min_returns: 3}
+  returns_after_high_rating: {enabled: true, points: 5, min_rating: 4, min_count: 2}
+  rising_return_rate:       {enabled: true, points: 10, min_trend: 2.0, min_recent_returns: 3}

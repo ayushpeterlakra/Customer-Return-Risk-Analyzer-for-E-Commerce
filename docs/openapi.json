@@ -1,0 +1,3468 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Customer Return Risk Analyzer API",
+    "description": "Decision-support API that scores customer return behaviour. A high score means a pattern worth reviewing, not proof of fraud.",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/api/health": {
+      "get": {
+        "tags": [
+          "health"
+        ],
+        "summary": "Service and database health",
+        "operationId": "health_api_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/customers": {
+      "get": {
+        "tags": [
+          "customers"
+        ],
+        "summary": "Customer table with search, filters, sorting",
+        "operationId": "list_customers_api_customers_get",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1,
+              "title": "Page"
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Page Size"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 100
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Customer ID or name",
+              "title": "Search"
+            },
+            "description": "Customer ID or name"
+          },
+          {
+            "name": "risk_level",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/RiskLevel"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Risk Level"
+            }
+          },
+          {
+            "name": "min_score",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "maximum": 100,
+                  "minimum": 0
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Min Score"
+            }
+          },
+          {
+            "name": "min_return_ratio",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "number",
+                  "maximum": 1,
+                  "minimum": 0
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "e.g. 0.3 for above 30%",
+              "title": "Min Return Ratio"
+            },
+            "description": "e.g. 0.3 for above 30%"
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 60
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Category"
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "risk_score",
+                "return_ratio",
+                "total_returns",
+                "total_orders",
+                "last_return_date",
+                "name",
+                "customer_id"
+              ],
+              "type": "string",
+              "default": "risk_score",
+              "title": "Sort"
+            }
+          },
+          {
+            "name": "order",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "type": "string",
+              "default": "desc",
+              "title": "Order"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_CustomerListItem_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/customers/{customer_id}": {
+      "get": {
+        "tags": [
+          "customers"
+        ],
+        "summary": "Customer profile",
+        "operationId": "get_customer_api_customers__customer_id__get",
+        "parameters": [
+          {
+            "name": "customer_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Customer Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/customers/{customer_id}/orders": {
+      "get": {
+        "tags": [
+          "customers"
+        ],
+        "summary": "Customer order history",
+        "operationId": "get_orders_api_customers__customer_id__orders_get",
+        "parameters": [
+          {
+            "name": "customer_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Customer Id"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1,
+              "title": "Page"
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 50,
+              "title": "Page Size"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_OrderOut_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/customers/{customer_id}/returns": {
+      "get": {
+        "tags": [
+          "customers"
+        ],
+        "summary": "Customer return history",
+        "operationId": "get_returns_api_customers__customer_id__returns_get",
+        "parameters": [
+          {
+            "name": "customer_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Customer Id"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1,
+              "title": "Page"
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 50,
+              "title": "Page Size"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_ReturnOut_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/risk/assess-all": {
+      "post": {
+        "tags": [
+          "risk"
+        ],
+        "summary": "Rescore every customer",
+        "operationId": "assess_all_api_risk_assess_all_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssessAllResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/risk/high-risk": {
+      "get": {
+        "tags": [
+          "risk"
+        ],
+        "summary": "High-risk customers for monitoring",
+        "operationId": "high_risk_api_risk_high_risk_get",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1,
+              "title": "Page"
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Page Size"
+            }
+          },
+          {
+            "name": "review_status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/ReviewStatus"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Review Status"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_HighRiskItem_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/risk/summary": {
+      "get": {
+        "tags": [
+          "risk"
+        ],
+        "summary": "Counts by risk level",
+        "operationId": "summary_api_risk_summary_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RiskSummary"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/risk/assess/{customer_id}": {
+      "post": {
+        "tags": [
+          "risk"
+        ],
+        "summary": "Score one customer now",
+        "operationId": "assess_api_risk_assess__customer_id__post",
+        "parameters": [
+          {
+            "name": "customer_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Customer Id"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssessmentOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/risk/{customer_id}": {
+      "get": {
+        "tags": [
+          "risk"
+        ],
+        "summary": "Latest assessment",
+        "operationId": "latest_api_risk__customer_id__get",
+        "parameters": [
+          {
+            "name": "customer_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Customer Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssessmentOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/risk/{customer_id}/history": {
+      "get": {
+        "tags": [
+          "risk"
+        ],
+        "summary": "Score history",
+        "operationId": "history_api_risk__customer_id__history_get",
+        "parameters": [
+          {
+            "name": "customer_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Customer Id"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 500,
+              "minimum": 1,
+              "default": 100,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AssessmentHistoryItem"
+                  },
+                  "title": "Response History Api Risk  Customer Id  History Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/analytics/summary": {
+      "get": {
+        "tags": [
+          "analytics"
+        ],
+        "summary": "Summary",
+        "operationId": "summary_api_analytics_summary_get",
+        "parameters": [
+          {
+            "name": "date_from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Date From"
+            }
+          },
+          {
+            "name": "date_to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Date To"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalyticsSummary"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/analytics/returns-by-category": {
+      "get": {
+        "tags": [
+          "analytics"
+        ],
+        "summary": "Returns By Category",
+        "operationId": "returns_by_category_api_analytics_returns_by_category_get",
+        "parameters": [
+          {
+            "name": "date_from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Date From"
+            }
+          },
+          {
+            "name": "date_to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Date To"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CategoryReturns"
+                  },
+                  "title": "Response Returns By Category Api Analytics Returns By Category Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/analytics/risk-distribution": {
+      "get": {
+        "tags": [
+          "analytics"
+        ],
+        "summary": "Risk Distribution",
+        "operationId": "risk_distribution_api_analytics_risk_distribution_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/LevelCount"
+                  },
+                  "type": "array",
+                  "title": "Response Risk Distribution Api Analytics Risk Distribution Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/analytics/return-trends": {
+      "get": {
+        "tags": [
+          "analytics"
+        ],
+        "summary": "Return Trends",
+        "operationId": "return_trends_api_analytics_return_trends_get",
+        "parameters": [
+          {
+            "name": "granularity",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "day",
+                "week"
+              ],
+              "type": "string",
+              "default": "week",
+              "title": "Granularity"
+            }
+          },
+          {
+            "name": "date_from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Date From"
+            }
+          },
+          {
+            "name": "date_to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Date To"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TrendPoint"
+                  },
+                  "title": "Response Return Trends Api Analytics Return Trends Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/analytics/return-ratio-distribution": {
+      "get": {
+        "tags": [
+          "analytics"
+        ],
+        "summary": "Return Ratio Distribution",
+        "operationId": "return_ratio_distribution_api_analytics_return_ratio_distribution_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/RatioBucket"
+                  },
+                  "type": "array",
+                  "title": "Response Return Ratio Distribution Api Analytics Return Ratio Distribution Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/analytics/return-reasons": {
+      "get": {
+        "tags": [
+          "analytics"
+        ],
+        "summary": "Return Reasons",
+        "operationId": "return_reasons_api_analytics_return_reasons_get",
+        "parameters": [
+          {
+            "name": "date_from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Date From"
+            }
+          },
+          {
+            "name": "date_to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Date To"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ReasonCount"
+                  },
+                  "title": "Response Return Reasons Api Analytics Return Reasons Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/reviews/{customer_id}": {
+      "patch": {
+        "tags": [
+          "reviews"
+        ],
+        "summary": "Change review status (adds audit row)",
+        "operationId": "update_review_api_reviews__customer_id__patch",
+        "parameters": [
+          {
+            "name": "customer_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Customer Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviewUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewRecordOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "reviews"
+        ],
+        "summary": "Audit trail, newest first",
+        "operationId": "audit_trail_api_reviews__customer_id__get",
+        "parameters": [
+          {
+            "name": "customer_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Customer Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ReviewRecordOut"
+                  },
+                  "title": "Response Audit Trail Api Reviews  Customer Id  Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/reviews": {
+      "get": {
+        "tags": [
+          "reviews"
+        ],
+        "summary": "Current review status per customer",
+        "operationId": "list_reviews_api_reviews_get",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1,
+              "title": "Page"
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Page Size"
+            }
+          },
+          {
+            "name": "review_status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/ReviewStatus"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Review Status"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_ReviewListItem_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ml/predict": {
+      "post": {
+        "tags": [
+          "ml"
+        ],
+        "summary": "ML probability of a suspicious return pattern",
+        "operationId": "predict_api_ml_predict_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PredictRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PredictResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ml/metrics": {
+      "get": {
+        "tags": [
+          "ml"
+        ],
+        "summary": "Stored evaluation metrics from the last training run",
+        "operationId": "metrics_api_ml_metrics_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/data/import": {
+      "post": {
+        "tags": [
+          "data"
+        ],
+        "summary": "Import orders and returns from CSV (all-or-nothing), then rescore",
+        "operationId": "import_data_api_data_import_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_import_data_api_data_import_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/data/import/template": {
+      "get": {
+        "tags": [
+          "data"
+        ],
+        "summary": "Empty CSV template with the required columns",
+        "operationId": "template_api_data_import_template_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/data/export/flagged-customers": {
+      "get": {
+        "tags": [
+          "data"
+        ],
+        "summary": "CSV of flagged customers (no contact details)",
+        "operationId": "export_flagged_api_data_export_flagged_customers_get",
+        "parameters": [
+          {
+            "name": "risk_level",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "LOW",
+                "MEDIUM",
+                "HIGH",
+                "ALL"
+              ],
+              "type": "string",
+              "description": "ALL = every scored customer",
+              "default": "HIGH",
+              "title": "Risk Level"
+            },
+            "description": "ALL = every scored customer"
+          },
+          {
+            "name": "min_score",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "maximum": 100,
+                  "minimum": 0
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Min Score"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/settings/scoring-rules": {
+      "get": {
+        "tags": [
+          "settings"
+        ],
+        "summary": "Get Rules",
+        "operationId": "get_rules_api_settings_scoring_rules_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RulesResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "settings"
+        ],
+        "summary": "Save a new rules version and rescore",
+        "operationId": "save_rules_api_settings_scoring_rules_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveRules"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RulesResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/settings/scoring-rules/reset": {
+      "post": {
+        "tags": [
+          "settings"
+        ],
+        "summary": "Restore the default rules and rescore",
+        "operationId": "reset_rules_api_settings_scoring_rules_reset_post",
+        "parameters": [
+          {
+            "name": "updated_by",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "admin",
+              "title": "Updated By"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RulesResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AnalyticsSummary": {
+        "properties": {
+          "total_customers": {
+            "type": "integer",
+            "title": "Total Customers"
+          },
+          "total_orders": {
+            "type": "integer",
+            "title": "Total Orders"
+          },
+          "total_returns": {
+            "type": "integer",
+            "title": "Total Returns"
+          },
+          "average_return_ratio": {
+            "type": "number",
+            "title": "Average Return Ratio"
+          },
+          "high_risk_customers": {
+            "type": "integer",
+            "title": "High Risk Customers"
+          },
+          "medium_risk_customers": {
+            "type": "integer",
+            "title": "Medium Risk Customers"
+          },
+          "low_risk_customers": {
+            "type": "integer",
+            "title": "Low Risk Customers"
+          },
+          "total_refunded": {
+            "type": "number",
+            "title": "Total Refunded"
+          },
+          "date_from": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Date From"
+          },
+          "date_to": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Date To"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total_customers",
+          "total_orders",
+          "total_returns",
+          "average_return_ratio",
+          "high_risk_customers",
+          "medium_risk_customers",
+          "low_risk_customers",
+          "total_refunded",
+          "date_from",
+          "date_to"
+        ],
+        "title": "AnalyticsSummary"
+      },
+      "AssessAllResult": {
+        "properties": {
+          "assessed": {
+            "type": "integer",
+            "title": "Assessed"
+          },
+          "LOW": {
+            "type": "integer",
+            "title": "Low"
+          },
+          "MEDIUM": {
+            "type": "integer",
+            "title": "Medium"
+          },
+          "HIGH": {
+            "type": "integer",
+            "title": "High"
+          },
+          "duration_ms": {
+            "type": "integer",
+            "title": "Duration Ms"
+          }
+        },
+        "type": "object",
+        "required": [
+          "assessed",
+          "LOW",
+          "MEDIUM",
+          "HIGH",
+          "duration_ms"
+        ],
+        "title": "AssessAllResult"
+      },
+      "AssessmentHistoryItem": {
+        "properties": {
+          "risk_score": {
+            "type": "integer",
+            "title": "Risk Score"
+          },
+          "risk_level": {
+            "$ref": "#/components/schemas/RiskLevel"
+          },
+          "config_version": {
+            "type": "string",
+            "title": "Config Version"
+          },
+          "assessed_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Assessed At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "risk_score",
+          "risk_level",
+          "config_version",
+          "assessed_at"
+        ],
+        "title": "AssessmentHistoryItem"
+      },
+      "AssessmentOut": {
+        "properties": {
+          "customer_id": {
+            "type": "string",
+            "title": "Customer Id"
+          },
+          "risk_score": {
+            "type": "integer",
+            "title": "Risk Score"
+          },
+          "risk_level": {
+            "$ref": "#/components/schemas/RiskLevel"
+          },
+          "risk_factors": {
+            "items": {
+              "$ref": "#/components/schemas/RiskFactorOut"
+            },
+            "type": "array",
+            "title": "Risk Factors"
+          },
+          "requires_manual_review": {
+            "type": "boolean",
+            "title": "Requires Manual Review"
+          },
+          "scoring_method": {
+            "$ref": "#/components/schemas/ScoringMethod"
+          },
+          "config_version": {
+            "type": "string",
+            "title": "Config Version"
+          },
+          "notes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Notes"
+          },
+          "features": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Features"
+          },
+          "assessed_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Assessed At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "customer_id",
+          "risk_score",
+          "risk_level",
+          "risk_factors",
+          "requires_manual_review",
+          "scoring_method",
+          "config_version",
+          "notes",
+          "features",
+          "assessed_at"
+        ],
+        "title": "AssessmentOut"
+      },
+      "Body_import_data_api_data_import_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "File",
+            "description": "CSV with the documented columns"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "title": "Body_import_data_api_data_import_post"
+      },
+      "CategoryCount": {
+        "properties": {
+          "category": {
+            "type": "string",
+            "title": "Category"
+          },
+          "orders": {
+            "type": "integer",
+            "title": "Orders"
+          },
+          "returns": {
+            "type": "integer",
+            "title": "Returns"
+          }
+        },
+        "type": "object",
+        "required": [
+          "category",
+          "orders",
+          "returns"
+        ],
+        "title": "CategoryCount"
+      },
+      "CategoryReturns": {
+        "properties": {
+          "category": {
+            "type": "string",
+            "title": "Category"
+          },
+          "orders": {
+            "type": "integer",
+            "title": "Orders"
+          },
+          "returns": {
+            "type": "integer",
+            "title": "Returns"
+          },
+          "return_rate": {
+            "type": "number",
+            "title": "Return Rate"
+          },
+          "mismatches": {
+            "type": "integer",
+            "title": "Mismatches"
+          }
+        },
+        "type": "object",
+        "required": [
+          "category",
+          "orders",
+          "returns",
+          "return_rate",
+          "mismatches"
+        ],
+        "title": "CategoryReturns"
+      },
+      "CustomerDetail": {
+        "properties": {
+          "customer_id": {
+            "type": "string",
+            "title": "Customer Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "email": {
+            "type": "string",
+            "title": "Email"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "total_orders": {
+            "type": "integer",
+            "title": "Total Orders"
+          },
+          "total_returns": {
+            "type": "integer",
+            "title": "Total Returns"
+          },
+          "return_percentage": {
+            "type": "number",
+            "title": "Return Percentage"
+          },
+          "total_order_value": {
+            "type": "string",
+            "title": "Total Order Value"
+          },
+          "total_refunded": {
+            "type": "string",
+            "title": "Total Refunded"
+          },
+          "mismatch_count": {
+            "type": "integer",
+            "title": "Mismatch Count"
+          },
+          "last_return_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Return Date"
+          },
+          "review_status": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ReviewStatus"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "latest_assessment": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AssessmentOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "categories": {
+            "items": {
+              "$ref": "#/components/schemas/CategoryCount"
+            },
+            "type": "array",
+            "title": "Categories"
+          }
+        },
+        "type": "object",
+        "required": [
+          "customer_id",
+          "name",
+          "email",
+          "created_at",
+          "total_orders",
+          "total_returns",
+          "return_percentage",
+          "total_order_value",
+          "total_refunded",
+          "mismatch_count",
+          "last_return_date",
+          "review_status",
+          "latest_assessment",
+          "categories"
+        ],
+        "title": "CustomerDetail"
+      },
+      "CustomerListItem": {
+        "properties": {
+          "customer_id": {
+            "type": "string",
+            "title": "Customer Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "total_orders": {
+            "type": "integer",
+            "title": "Total Orders"
+          },
+          "total_returns": {
+            "type": "integer",
+            "title": "Total Returns"
+          },
+          "return_percentage": {
+            "type": "number",
+            "title": "Return Percentage"
+          },
+          "risk_score": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Risk Score"
+          },
+          "risk_level": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RiskLevel"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "last_return_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Return Date"
+          },
+          "review_status": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ReviewStatus"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "customer_id",
+          "name",
+          "total_orders",
+          "total_returns",
+          "return_percentage",
+          "risk_score",
+          "risk_level",
+          "last_return_date",
+          "review_status"
+        ],
+        "title": "CustomerListItem"
+      },
+      "FeatureInput": {
+        "properties": {
+          "total_orders": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Total Orders"
+          },
+          "total_returns": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Total Returns"
+          },
+          "returns_last_90d": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Returns Last 90D",
+            "default": 0
+          },
+          "vague_reason_count": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Vague Reason Count",
+            "default": 0
+          },
+          "top_reason_share": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Top Reason Share"
+          },
+          "avg_return_window": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Avg Return Window"
+          },
+          "high_risk_category_share": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "High Risk Category Share"
+          },
+          "mismatch_count": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Mismatch Count",
+            "default": 0
+          },
+          "returned_high_rating_count": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Returned High Rating Count",
+            "default": 0
+          },
+          "return_rate_trend": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Return Rate Trend"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total_orders",
+          "total_returns"
+        ],
+        "title": "FeatureInput"
+      },
+      "GroupCaps": {
+        "properties": {
+          "return_volume": {
+            "type": "integer",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Return Volume"
+          },
+          "return_reasons": {
+            "type": "integer",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Return Reasons"
+          },
+          "item_mismatch": {
+            "type": "integer",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Item Mismatch"
+          },
+          "return_timing": {
+            "type": "integer",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Return Timing"
+          },
+          "behaviour": {
+            "type": "integer",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Behaviour"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "return_volume",
+          "return_reasons",
+          "item_mismatch",
+          "return_timing",
+          "behaviour"
+        ],
+        "title": "GroupCaps"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "HealthResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "version": {
+            "type": "string",
+            "title": "Version"
+          },
+          "environment": {
+            "type": "string",
+            "title": "Environment"
+          },
+          "database": {
+            "type": "string",
+            "title": "Database"
+          },
+          "database_error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Database Error"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "version",
+          "environment",
+          "database"
+        ],
+        "title": "HealthResponse"
+      },
+      "HighReturnCategories": {
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled",
+            "default": true
+          },
+          "points": {
+            "type": "integer",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Points"
+          },
+          "min_share": {
+            "type": "number",
+            "maximum": 1.0,
+            "exclusiveMinimum": 0.0,
+            "title": "Min Share"
+          },
+          "min_returns": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Min Returns"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "points",
+          "min_share",
+          "min_returns"
+        ],
+        "title": "HighReturnCategories"
+      },
+      "HighReturnFrequency": {
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled",
+            "default": true
+          },
+          "points": {
+            "type": "integer",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Points"
+          },
+          "min_returns_90d": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Min Returns 90D"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "points",
+          "min_returns_90d"
+        ],
+        "title": "HighReturnFrequency"
+      },
+      "HighReturnRatio": {
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled",
+            "default": true
+          },
+          "points": {
+            "type": "integer",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Points"
+          },
+          "threshold": {
+            "type": "number",
+            "exclusiveMaximum": 1.0,
+            "exclusiveMinimum": 0.0,
+            "title": "Threshold"
+          },
+          "min_orders": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Min Orders"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "points",
+          "threshold",
+          "min_orders"
+        ],
+        "title": "HighReturnRatio"
+      },
+      "HighRiskItem": {
+        "properties": {
+          "customer_id": {
+            "type": "string",
+            "title": "Customer Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "risk_score": {
+            "type": "integer",
+            "title": "Risk Score"
+          },
+          "risk_level": {
+            "$ref": "#/components/schemas/RiskLevel"
+          },
+          "top_factors": {
+            "items": {
+              "$ref": "#/components/schemas/RiskFactorOut"
+            },
+            "type": "array",
+            "title": "Top Factors"
+          },
+          "review_status": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ReviewStatus"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "review_updated_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Review Updated At"
+          },
+          "assessed_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Assessed At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "customer_id",
+          "name",
+          "risk_score",
+          "risk_level",
+          "top_factors",
+          "review_status",
+          "review_updated_at",
+          "assessed_at"
+        ],
+        "title": "HighRiskItem"
+      },
+      "LevelCount": {
+        "properties": {
+          "risk_level": {
+            "$ref": "#/components/schemas/RiskLevel"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          },
+          "percentage": {
+            "type": "number",
+            "title": "Percentage"
+          }
+        },
+        "type": "object",
+        "required": [
+          "risk_level",
+          "count",
+          "percentage"
+        ],
+        "title": "LevelCount"
+      },
+      "Levels": {
+        "properties": {
+          "low_max": {
+            "type": "integer",
+            "maximum": 99.0,
+            "minimum": 0.0,
+            "title": "Low Max"
+          },
+          "medium_max": {
+            "type": "integer",
+            "maximum": 99.0,
+            "minimum": 1.0,
+            "title": "Medium Max"
+          }
+        },
+        "type": "object",
+        "required": [
+          "low_max",
+          "medium_max"
+        ],
+        "title": "Levels"
+      },
+      "MismatchHistory": {
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled",
+            "default": true
+          },
+          "points": {
+            "type": "integer",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Points"
+          },
+          "multi_points": {
+            "type": "integer",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Multi Points"
+          },
+          "multi_threshold": {
+            "type": "integer",
+            "minimum": 2.0,
+            "title": "Multi Threshold"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "points",
+          "multi_points",
+          "multi_threshold"
+        ],
+        "title": "MismatchHistory"
+      },
+      "OrderOut": {
+        "properties": {
+          "order_id": {
+            "type": "string",
+            "title": "Order Id"
+          },
+          "product_id": {
+            "type": "string",
+            "title": "Product Id"
+          },
+          "product_name": {
+            "type": "string",
+            "title": "Product Name"
+          },
+          "category": {
+            "type": "string",
+            "title": "Category"
+          },
+          "order_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Order Date"
+          },
+          "delivery_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Delivery Date"
+          },
+          "order_amount": {
+            "type": "string",
+            "title": "Order Amount"
+          },
+          "order_status": {
+            "$ref": "#/components/schemas/OrderStatus"
+          },
+          "customer_rating": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Customer Rating"
+          },
+          "returned": {
+            "type": "boolean",
+            "title": "Returned"
+          }
+        },
+        "type": "object",
+        "required": [
+          "order_id",
+          "product_id",
+          "product_name",
+          "category",
+          "order_date",
+          "delivery_date",
+          "order_amount",
+          "order_status",
+          "customer_rating",
+          "returned"
+        ],
+        "title": "OrderOut"
+      },
+      "OrderStatus": {
+        "type": "string",
+        "enum": [
+          "PLACED",
+          "SHIPPED",
+          "DELIVERED",
+          "CANCELLED"
+        ],
+        "title": "OrderStatus"
+      },
+      "Page_CustomerListItem_": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/CustomerListItem"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "page": {
+            "type": "integer",
+            "title": "Page"
+          },
+          "page_size": {
+            "type": "integer",
+            "title": "Page Size"
+          },
+          "pages": {
+            "type": "integer",
+            "title": "Pages"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "page",
+          "page_size",
+          "pages"
+        ],
+        "title": "Page[CustomerListItem]"
+      },
+      "Page_HighRiskItem_": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/HighRiskItem"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "page": {
+            "type": "integer",
+            "title": "Page"
+          },
+          "page_size": {
+            "type": "integer",
+            "title": "Page Size"
+          },
+          "pages": {
+            "type": "integer",
+            "title": "Pages"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "page",
+          "page_size",
+          "pages"
+        ],
+        "title": "Page[HighRiskItem]"
+      },
+      "Page_OrderOut_": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/OrderOut"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "page": {
+            "type": "integer",
+            "title": "Page"
+          },
+          "page_size": {
+            "type": "integer",
+            "title": "Page Size"
+          },
+          "pages": {
+            "type": "integer",
+            "title": "Pages"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "page",
+          "page_size",
+          "pages"
+        ],
+        "title": "Page[OrderOut]"
+      },
+      "Page_ReturnOut_": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ReturnOut"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "page": {
+            "type": "integer",
+            "title": "Page"
+          },
+          "page_size": {
+            "type": "integer",
+            "title": "Page Size"
+          },
+          "pages": {
+            "type": "integer",
+            "title": "Pages"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "page",
+          "page_size",
+          "pages"
+        ],
+        "title": "Page[ReturnOut]"
+      },
+      "Page_ReviewListItem_": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ReviewListItem"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "page": {
+            "type": "integer",
+            "title": "Page"
+          },
+          "page_size": {
+            "type": "integer",
+            "title": "Page Size"
+          },
+          "pages": {
+            "type": "integer",
+            "title": "Pages"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "page",
+          "page_size",
+          "pages"
+        ],
+        "title": "Page[ReviewListItem]"
+      },
+      "PredictRequest": {
+        "properties": {
+          "customer_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Customer Id"
+          },
+          "features": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FeatureInput"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "model": {
+            "type": "string",
+            "pattern": "^(selected|logistic_regression|decision_tree)$",
+            "title": "Model",
+            "default": "selected"
+          }
+        },
+        "type": "object",
+        "title": "PredictRequest"
+      },
+      "PredictResponse": {
+        "properties": {
+          "customer_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Customer Id"
+          },
+          "model": {
+            "type": "string",
+            "title": "Model"
+          },
+          "probability_suspicious_pattern": {
+            "type": "number",
+            "title": "Probability Suspicious Pattern"
+          },
+          "predicted_label": {
+            "type": "string",
+            "title": "Predicted Label"
+          },
+          "threshold": {
+            "type": "number",
+            "title": "Threshold"
+          },
+          "rule_based_score": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rule Based Score"
+          },
+          "rule_based_level": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rule Based Level"
+          },
+          "disclaimer": {
+            "type": "string",
+            "title": "Disclaimer"
+          }
+        },
+        "type": "object",
+        "required": [
+          "customer_id",
+          "model",
+          "probability_suspicious_pattern",
+          "predicted_label",
+          "threshold",
+          "rule_based_score",
+          "rule_based_level",
+          "disclaimer"
+        ],
+        "title": "PredictResponse"
+      },
+      "RatioBucket": {
+        "properties": {
+          "bucket": {
+            "type": "string",
+            "title": "Bucket"
+          },
+          "lower": {
+            "type": "number",
+            "title": "Lower"
+          },
+          "upper": {
+            "type": "number",
+            "title": "Upper"
+          },
+          "customers": {
+            "type": "integer",
+            "title": "Customers"
+          }
+        },
+        "type": "object",
+        "required": [
+          "bucket",
+          "lower",
+          "upper",
+          "customers"
+        ],
+        "title": "RatioBucket"
+      },
+      "ReasonCode": {
+        "type": "string",
+        "enum": [
+          "DEFECTIVE",
+          "NOT_WORKING",
+          "WRONG_ITEM",
+          "DAMAGED_IN_TRANSIT",
+          "SIZE_FIT",
+          "NOT_AS_DESCRIBED",
+          "CHANGED_MIND",
+          "OTHER"
+        ],
+        "title": "ReasonCode"
+      },
+      "ReasonCount": {
+        "properties": {
+          "reason_code": {
+            "type": "string",
+            "title": "Reason Code"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          },
+          "vague": {
+            "type": "integer",
+            "title": "Vague"
+          }
+        },
+        "type": "object",
+        "required": [
+          "reason_code",
+          "count",
+          "vague"
+        ],
+        "title": "ReasonCount"
+      },
+      "RepeatedReason": {
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled",
+            "default": true
+          },
+          "points": {
+            "type": "integer",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Points"
+          },
+          "min_share": {
+            "type": "number",
+            "maximum": 1.0,
+            "exclusiveMinimum": 0.0,
+            "title": "Min Share"
+          },
+          "min_returns": {
+            "type": "integer",
+            "minimum": 2.0,
+            "title": "Min Returns"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "points",
+          "min_share",
+          "min_returns"
+        ],
+        "title": "RepeatedReason"
+      },
+      "ReturnOut": {
+        "properties": {
+          "return_id": {
+            "type": "string",
+            "title": "Return Id"
+          },
+          "order_id": {
+            "type": "string",
+            "title": "Order Id"
+          },
+          "product_name": {
+            "type": "string",
+            "title": "Product Name"
+          },
+          "category": {
+            "type": "string",
+            "title": "Category"
+          },
+          "order_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Order Date"
+          },
+          "delivery_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Delivery Date"
+          },
+          "return_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Return Date"
+          },
+          "days_to_return": {
+            "type": "integer",
+            "title": "Days To Return"
+          },
+          "reason_code": {
+            "$ref": "#/components/schemas/ReasonCode"
+          },
+          "reason_text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason Text"
+          },
+          "is_vague": {
+            "type": "boolean",
+            "title": "Is Vague"
+          },
+          "mismatch_flag": {
+            "type": "boolean",
+            "title": "Mismatch Flag"
+          },
+          "refund_amount": {
+            "type": "string",
+            "title": "Refund Amount"
+          },
+          "return_status": {
+            "$ref": "#/components/schemas/ReturnStatus"
+          }
+        },
+        "type": "object",
+        "required": [
+          "return_id",
+          "order_id",
+          "product_name",
+          "category",
+          "order_date",
+          "delivery_date",
+          "return_date",
+          "days_to_return",
+          "reason_code",
+          "reason_text",
+          "is_vague",
+          "mismatch_flag",
+          "refund_amount",
+          "return_status"
+        ],
+        "title": "ReturnOut"
+      },
+      "ReturnStatus": {
+        "type": "string",
+        "enum": [
+          "REQUESTED",
+          "APPROVED",
+          "REJECTED",
+          "REFUNDED"
+        ],
+        "title": "ReturnStatus"
+      },
+      "ReturnsAfterHighRating": {
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled",
+            "default": true
+          },
+          "points": {
+            "type": "integer",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Points"
+          },
+          "min_rating": {
+            "type": "integer",
+            "maximum": 5.0,
+            "minimum": 1.0,
+            "title": "Min Rating"
+          },
+          "min_count": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Min Count"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "points",
+          "min_rating",
+          "min_count"
+        ],
+        "title": "ReturnsAfterHighRating"
+      },
+      "ReviewListItem": {
+        "properties": {
+          "customer_id": {
+            "type": "string",
+            "title": "Customer Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "review_status": {
+            "$ref": "#/components/schemas/ReviewStatus"
+          },
+          "updated_by": {
+            "type": "string",
+            "title": "Updated By"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          },
+          "risk_score": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Risk Score"
+          },
+          "risk_level": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RiskLevel"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "customer_id",
+          "name",
+          "review_status",
+          "updated_by",
+          "updated_at",
+          "risk_score",
+          "risk_level"
+        ],
+        "title": "ReviewListItem"
+      },
+      "ReviewRecordOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "customer_id": {
+            "type": "string",
+            "title": "Customer Id"
+          },
+          "previous_status": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ReviewStatus"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "review_status": {
+            "$ref": "#/components/schemas/ReviewStatus"
+          },
+          "review_notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Review Notes"
+          },
+          "updated_by": {
+            "type": "string",
+            "title": "Updated By"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "customer_id",
+          "previous_status",
+          "review_status",
+          "review_notes",
+          "updated_by",
+          "updated_at"
+        ],
+        "title": "ReviewRecordOut"
+      },
+      "ReviewStatus": {
+        "type": "string",
+        "enum": [
+          "PENDING_REVIEW",
+          "UNDER_INVESTIGATION",
+          "REVIEWED",
+          "ESCALATED"
+        ],
+        "title": "ReviewStatus"
+      },
+      "ReviewUpdate": {
+        "properties": {
+          "review_status": {
+            "$ref": "#/components/schemas/ReviewStatus"
+          },
+          "review_notes": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Review Notes"
+          },
+          "updated_by": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Updated By"
+          }
+        },
+        "type": "object",
+        "required": [
+          "review_status",
+          "updated_by"
+        ],
+        "title": "ReviewUpdate"
+      },
+      "RisingReturnRate": {
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled",
+            "default": true
+          },
+          "points": {
+            "type": "integer",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Points"
+          },
+          "min_trend": {
+            "type": "number",
+            "exclusiveMinimum": 1.0,
+            "title": "Min Trend"
+          },
+          "min_recent_returns": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Min Recent Returns"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "points",
+          "min_trend",
+          "min_recent_returns"
+        ],
+        "title": "RisingReturnRate"
+      },
+      "RiskFactorOut": {
+        "properties": {
+          "rule_id": {
+            "type": "string",
+            "title": "Rule Id"
+          },
+          "factor": {
+            "type": "string",
+            "title": "Factor"
+          },
+          "group": {
+            "type": "string",
+            "title": "Group"
+          },
+          "contribution": {
+            "type": "integer",
+            "title": "Contribution"
+          },
+          "raw_points": {
+            "type": "integer",
+            "title": "Raw Points"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          }
+        },
+        "type": "object",
+        "required": [
+          "rule_id",
+          "factor",
+          "group",
+          "contribution",
+          "raw_points",
+          "description"
+        ],
+        "title": "RiskFactorOut"
+      },
+      "RiskLevel": {
+        "type": "string",
+        "enum": [
+          "LOW",
+          "MEDIUM",
+          "HIGH"
+        ],
+        "title": "RiskLevel"
+      },
+      "RiskSummary": {
+        "properties": {
+          "total_assessed": {
+            "type": "integer",
+            "title": "Total Assessed"
+          },
+          "levels": {
+            "items": {
+              "$ref": "#/components/schemas/LevelCount"
+            },
+            "type": "array",
+            "title": "Levels"
+          },
+          "average_score": {
+            "type": "number",
+            "title": "Average Score"
+          },
+          "requires_review": {
+            "type": "integer",
+            "title": "Requires Review"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total_assessed",
+          "levels",
+          "average_score",
+          "requires_review"
+        ],
+        "title": "RiskSummary"
+      },
+      "Rules": {
+        "properties": {
+          "high_return_ratio": {
+            "$ref": "#/components/schemas/HighReturnRatio"
+          },
+          "very_high_return_ratio": {
+            "$ref": "#/components/schemas/HighReturnRatio"
+          },
+          "high_return_frequency": {
+            "$ref": "#/components/schemas/HighReturnFrequency"
+          },
+          "vague_reasons": {
+            "$ref": "#/components/schemas/VagueReasons"
+          },
+          "repeated_reason": {
+            "$ref": "#/components/schemas/RepeatedReason"
+          },
+          "mismatch_history": {
+            "$ref": "#/components/schemas/MismatchHistory"
+          },
+          "short_return_window": {
+            "$ref": "#/components/schemas/ShortReturnWindow"
+          },
+          "high_return_categories": {
+            "$ref": "#/components/schemas/HighReturnCategories"
+          },
+          "returns_after_high_rating": {
+            "$ref": "#/components/schemas/ReturnsAfterHighRating"
+          },
+          "rising_return_rate": {
+            "$ref": "#/components/schemas/RisingReturnRate"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "high_return_ratio",
+          "very_high_return_ratio",
+          "high_return_frequency",
+          "vague_reasons",
+          "repeated_reason",
+          "mismatch_history",
+          "short_return_window",
+          "high_return_categories",
+          "returns_after_high_rating",
+          "rising_return_rate"
+        ],
+        "title": "Rules"
+      },
+      "RulesResponse": {
+        "properties": {
+          "config": {
+            "$ref": "#/components/schemas/ScoringConfig"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "email_alerts_enabled": {
+            "type": "boolean",
+            "title": "Email Alerts Enabled"
+          }
+        },
+        "type": "object",
+        "required": [
+          "config",
+          "source",
+          "email_alerts_enabled"
+        ],
+        "title": "RulesResponse"
+      },
+      "SaveRules": {
+        "properties": {
+          "config": {
+            "$ref": "#/components/schemas/ScoringConfig"
+          },
+          "updated_by": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Updated By"
+          },
+          "rescore": {
+            "type": "boolean",
+            "title": "Rescore",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "config",
+          "updated_by"
+        ],
+        "title": "SaveRules"
+      },
+      "ScoringConfig": {
+        "properties": {
+          "version": {
+            "type": "string",
+            "maxLength": 40,
+            "minLength": 1,
+            "title": "Version"
+          },
+          "levels": {
+            "$ref": "#/components/schemas/Levels"
+          },
+          "vague_reason_codes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Vague Reason Codes"
+          },
+          "vague_text_min_length": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Vague Text Min Length"
+          },
+          "high_return_category_margin": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "High Return Category Margin"
+          },
+          "group_caps": {
+            "$ref": "#/components/schemas/GroupCaps"
+          },
+          "rules": {
+            "$ref": "#/components/schemas/Rules"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "version",
+          "levels",
+          "vague_reason_codes",
+          "vague_text_min_length",
+          "high_return_category_margin",
+          "group_caps",
+          "rules"
+        ],
+        "title": "ScoringConfig"
+      },
+      "ScoringMethod": {
+        "type": "string",
+        "enum": [
+          "RULE_BASED",
+          "ML"
+        ],
+        "title": "ScoringMethod"
+      },
+      "ShortReturnWindow": {
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled",
+            "default": true
+          },
+          "points": {
+            "type": "integer",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Points"
+          },
+          "max_avg_days": {
+            "type": "number",
+            "exclusiveMinimum": 0.0,
+            "title": "Max Avg Days"
+          },
+          "min_returns": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Min Returns"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "points",
+          "max_avg_days",
+          "min_returns"
+        ],
+        "title": "ShortReturnWindow"
+      },
+      "TrendPoint": {
+        "properties": {
+          "period_start": {
+            "type": "string",
+            "format": "date",
+            "title": "Period Start"
+          },
+          "returns": {
+            "type": "integer",
+            "title": "Returns"
+          },
+          "orders": {
+            "type": "integer",
+            "title": "Orders"
+          },
+          "mismatches": {
+            "type": "integer",
+            "title": "Mismatches"
+          }
+        },
+        "type": "object",
+        "required": [
+          "period_start",
+          "returns",
+          "orders",
+          "mismatches"
+        ],
+        "title": "TrendPoint"
+      },
+      "VagueReasons": {
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled",
+            "default": true
+          },
+          "points": {
+            "type": "integer",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Points"
+          },
+          "min_count": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Min Count"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "points",
+          "min_count"
+        ],
+        "title": "VagueReasons"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}
